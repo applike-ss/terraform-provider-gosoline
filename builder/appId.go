@@ -16,3 +16,7 @@ func (i AppId) CloudWatchNamespace() string {
 func (i AppId) EcsClusterName() string {
 	return fmt.Sprintf("%s-%s-%s", i.Project, i.Environment, i.Family)
 }
+
+func (i AppId) TargetGroupName() string {
+	return fmt.Sprintf("%s-%s-%s-%s", i.Project, i.Environment, i.Family, i.Application)
+}

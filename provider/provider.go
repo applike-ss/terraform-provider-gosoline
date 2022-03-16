@@ -54,5 +54,6 @@ func (p *GosolineProvider) GetDataSources(ctx context.Context) (map[string]tfsdk
 	return map[string]tfsdk.DataSourceType{
 		"gosoline_application_dashboard_definition": &ApplicationDashboardDefinitionDatasourceType{},
 		"gosoline_application_metadata_definition":  &ApplicationMetadataDefinitionDatasourceType{},
+		"gosoline_loadbalancer_definition":          &LoadbalancerDefinitionDatasourceType{},
 	}, nil
 }
