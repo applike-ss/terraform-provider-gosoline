@@ -1,6 +1,20 @@
 package builder
 
-type PanelFactory func(appId AppId, gridPos PanelGridPos) Panel
+func newPaneSettings(resourceNames ResourceNames, gridPos PanelGridPos, orchestrator string) PanelSettings {
+	return PanelSettings{
+		resourceNames: resourceNames,
+		gridPos:       gridPos,
+		orchestrator:  orchestrator,
+	}
+}
+
+type PanelSettings struct {
+	resourceNames ResourceNames
+	gridPos       PanelGridPos
+	orchestrator  string
+}
+
+type PanelFactory func(settings PanelSettings) Panel
 
 type Panel struct {
 	Collapsed   bool             `json:"collapsed,omitempty"`
@@ -123,6 +137,15 @@ type PanelTargetCloudWatch struct {
 	RefId      string            `json:"refId"`
 	Region     string            `json:"region"`
 	Statistics []string          `json:"statistics"`
+}
+
+type PanelTargetPrometheus struct {
+	Exemplar     bool   `json:"exemplar"`
+	Expression   string `json:"expr"`
+	Hide         bool   `json:"hide"`
+	Interval     string `json:"interval"`
+	LegendFormat string `json:"legendFormat"`
+	RefId        string `json:"refId"`
 }
 
 type PanelTargetElasticsearch struct {

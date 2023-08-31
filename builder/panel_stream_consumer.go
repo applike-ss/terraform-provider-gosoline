@@ -1,28 +1,54 @@
 package builder
 
-func NewPanelApiServerRequestCount(path string) PanelFactory {
+import "fmt"
+
+func NewPanelStreamConsumerProcessedCount(consumer MetadataStreamConsumer) PanelFactory {
 	return func(settings PanelSettings) Panel {
 		return Panel{
 			Datasource: settings.resourceNames.GrafanaCloudWatchDatasourceName,
 			FieldConfig: PanelFieldConfig{
 				Defaults: PanelFieldConfigDefaults{
+					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls: true,
+					},
 					Min: "0",
 				},
 				Overrides: []PanelFieldConfigOverwrite{
-					NewColorPropertyOverwrite("Requests", "semi-dark-blue"),
+					NewColorPropertyOverwrite("Processed", "super-light-blue"),
+					NewColorPropertyOverwrite("Error", "dark-red"),
 				},
 			},
 			GridPos: settings.gridPos,
 			Targets: []interface{}{
 				PanelTargetCloudWatch{
-					Alias: "Requests",
+					Alias: "Processed",
 					Dimensions: map[string]string{
-						"path": path,
+						"Consumer": consumer.Name,
 					},
+					Expression: "",
+					Id:         "m0",
 					MatchExact: true,
-					MetricName: "ApiRequestCount",
+					MetricName: "ProcessedCount",
 					Namespace:  settings.resourceNames.CloudwatchNamespace,
+					Period:     "",
 					RefId:      "A",
+					Region:     "default",
+					Statistics: []string{
+						"Sum",
+					},
+				},
+				PanelTargetCloudWatch{
+					Alias: "Error",
+					Dimensions: map[string]string{
+						"Consumer": consumer.Name,
+					},
+					Expression: "",
+					Id:         "m1",
+					MatchExact: true,
+					MetricName: "Error",
+					Namespace:  settings.resourceNames.CloudwatchNamespace,
+					Period:     "",
+					RefId:      "B",
 					Region:     "default",
 					Statistics: []string{
 						"Sum",
@@ -30,35 +56,38 @@ func NewPanelApiServerRequestCount(path string) PanelFactory {
 				},
 			},
 			Options: &PanelOptionsCloudWatch{},
-			Title:   "Request Count",
+			Title:   "Processed Count and Errors",
 			Type:    "timeseries",
 		}
 	}
 }
 
-func NewPanelApiServerResponseTime(path string) PanelFactory {
+func NewPanelStreamConsumerProcessDuration(consumer MetadataStreamConsumer) PanelFactory {
 	return func(settings PanelSettings) Panel {
 		return Panel{
 			Datasource: settings.resourceNames.GrafanaCloudWatchDatasourceName,
 			FieldConfig: PanelFieldConfig{
 				Defaults: PanelFieldConfigDefaults{
+					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls: true,
+					},
 					Min:  "0",
 					Unit: "ms",
-				},
-				Overrides: []PanelFieldConfigOverwrite{
-					NewColorPropertyOverwrite("Requests", "semi-dark-blue"),
 				},
 			},
 			GridPos: settings.gridPos,
 			Targets: []interface{}{
 				PanelTargetCloudWatch{
-					Alias: "Response Time",
+					Alias: "Average",
 					Dimensions: map[string]string{
-						"path": path,
+						"Consumer": consumer.Name,
 					},
+					Expression: "",
+					Id:         "m0",
 					MatchExact: true,
-					MetricName: "ApiRequestResponseTime",
+					MetricName: "Duration",
 					Namespace:  settings.resourceNames.CloudwatchNamespace,
+					Period:     "",
 					RefId:      "A",
 					Region:     "default",
 					Statistics: []string{
@@ -67,37 +96,37 @@ func NewPanelApiServerResponseTime(path string) PanelFactory {
 				},
 			},
 			Options: &PanelOptionsCloudWatch{},
-			Title:   "Response Time",
+			Title:   "Duration per consume operation",
 			Type:    "timeseries",
 		}
 	}
 }
 
-func NewPanelApiServerHttpStatus(path string) PanelFactory {
+func NewPanelStreamConsumerRetryActions(consumer MetadataStreamConsumer) PanelFactory {
 	return func(settings PanelSettings) Panel {
 		return Panel{
 			Datasource: settings.resourceNames.GrafanaCloudWatchDatasourceName,
 			FieldConfig: PanelFieldConfig{
 				Defaults: PanelFieldConfigDefaults{
+					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls: true,
+					},
 					Min: "0",
-				},
-				Overrides: []PanelFieldConfigOverwrite{
-					NewColorPropertyOverwrite("HTTP 2XX", "semi-dark-green"),
-					NewColorPropertyOverwrite("HTTP 3XX", "semi-dark-yellow"),
-					NewColorPropertyOverwrite("HTTP 4XX", "semi-dark-orange"),
-					NewColorPropertyOverwrite("HTTP 5XX", "dark-red"),
 				},
 			},
 			GridPos: settings.gridPos,
 			Targets: []interface{}{
 				PanelTargetCloudWatch{
-					Alias: "HTTP 2XX",
+					Alias: "Processed",
 					Dimensions: map[string]string{
-						"path": path,
+						"Consumer": consumer.Name,
 					},
+					Expression: "",
+					Id:         "m0",
 					MatchExact: true,
-					MetricName: "ApiStatus2XX",
+					MetricName: "RetryGetCount",
 					Namespace:  settings.resourceNames.CloudwatchNamespace,
+					Period:     "",
 					RefId:      "A",
 					Region:     "default",
 					Statistics: []string{
@@ -105,42 +134,17 @@ func NewPanelApiServerHttpStatus(path string) PanelFactory {
 					},
 				},
 				PanelTargetCloudWatch{
-					Alias: "HTTP 3XX",
+					Alias: "Error",
 					Dimensions: map[string]string{
-						"path": path,
+						"Consumer": consumer.Name,
 					},
+					Expression: "",
+					Id:         "m1",
 					MatchExact: true,
-					MetricName: "ApiStatus3XX",
+					MetricName: "RetryPutCount",
 					Namespace:  settings.resourceNames.CloudwatchNamespace,
+					Period:     "",
 					RefId:      "B",
-					Region:     "default",
-					Statistics: []string{
-						"Sum",
-					},
-				},
-				PanelTargetCloudWatch{
-					Alias: "HTTP 4XX",
-					Dimensions: map[string]string{
-						"path": path,
-					},
-					MatchExact: true,
-					MetricName: "ApiStatus4XX",
-					Namespace:  settings.resourceNames.CloudwatchNamespace,
-					RefId:      "C",
-					Region:     "default",
-					Statistics: []string{
-						"Sum",
-					},
-				},
-				PanelTargetCloudWatch{
-					Alias: "HTTP 5XX",
-					Dimensions: map[string]string{
-						"path": path,
-					},
-					MatchExact: true,
-					MetricName: "ApiStatus5XX",
-					Namespace:  settings.resourceNames.CloudwatchNamespace,
-					RefId:      "D",
 					Region:     "default",
 					Statistics: []string{
 						"Sum",
@@ -148,7 +152,7 @@ func NewPanelApiServerHttpStatus(path string) PanelFactory {
 				},
 			},
 			Options: &PanelOptionsCloudWatch{},
-			Title:   "HTTP Status Overview",
+			Title:   fmt.Sprintf("Retry Actions with type: %s", consumer.RetryType),
 			Type:    "timeseries",
 		}
 	}

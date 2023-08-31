@@ -1,8 +1,8 @@
 package builder
 
-func NewPanelError(appId AppId, gridPos PanelGridPos) Panel {
+func NewPanelError(settings PanelSettings) Panel {
 	return Panel{
-		Datasource: "CloudWatch",
+		Datasource: settings.resourceNames.GrafanaCloudWatchDatasourceName,
 		FieldConfig: PanelFieldConfig{
 			Defaults: PanelFieldConfigDefaults{
 				Custom: PanelFieldConfigDefaultsCustom{
@@ -14,14 +14,14 @@ func NewPanelError(appId AppId, gridPos PanelGridPos) Panel {
 				NewColorPropertyOverwrite("Errors", "dark-red"),
 			},
 		},
-		GridPos: gridPos,
+		GridPos: settings.gridPos,
 		Targets: []interface{}{
 			PanelTargetCloudWatch{
 				Alias:      "Errors",
 				Dimensions: map[string]string{},
 				MatchExact: false,
 				MetricName: "error",
-				Namespace:  appId.CloudWatchNamespace(),
+				Namespace:  settings.resourceNames.CloudwatchNamespace,
 				Region:     "default",
 				Statistics: []string{
 					"Sum",
@@ -34,9 +34,9 @@ func NewPanelError(appId AppId, gridPos PanelGridPos) Panel {
 	}
 }
 
-func NewPanelWarn(appId AppId, gridPos PanelGridPos) Panel {
+func NewPanelWarn(settings PanelSettings) Panel {
 	return Panel{
-		Datasource: "CloudWatch",
+		Datasource: settings.resourceNames.GrafanaCloudWatchDatasourceName,
 		FieldConfig: PanelFieldConfig{
 			Defaults: PanelFieldConfigDefaults{
 				Custom: PanelFieldConfigDefaultsCustom{
@@ -48,13 +48,13 @@ func NewPanelWarn(appId AppId, gridPos PanelGridPos) Panel {
 				NewColorPropertyOverwrite("Warnings", "dark-yellow"),
 			},
 		},
-		GridPos: gridPos,
+		GridPos: settings.gridPos,
 		Targets: []interface{}{
 			PanelTargetCloudWatch{
 				Alias:      "Warnings",
 				Dimensions: map[string]string{},
 				MetricName: "warn",
-				Namespace:  appId.CloudWatchNamespace(),
+				Namespace:  settings.resourceNames.CloudwatchNamespace,
 				Region:     "default",
 				Statistics: []string{
 					"Sum",

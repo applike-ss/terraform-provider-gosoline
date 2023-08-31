@@ -1,12 +1,13 @@
 package builder
 
-func NewPanelSqsMessagesVisible(queue string) PanelFactory {
-	return func(appId AppId, gridPos PanelGridPos) Panel {
+func NewPanelSqsMessagesVisible(queue MetadataCloudAwsSqsQueue) PanelFactory {
+	return func(settings PanelSettings) Panel {
 		return Panel{
-			Datasource: "CloudWatch",
+			Datasource: settings.resourceNames.GetCwDatasourceNameByClientName(queue.AwsClientName),
 			FieldConfig: PanelFieldConfig{
 				Defaults: PanelFieldConfigDefaults{
 					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls:     true,
 						LineWidth:     2,
 						AxisPlacement: "right",
 					},
@@ -14,12 +15,12 @@ func NewPanelSqsMessagesVisible(queue string) PanelFactory {
 				},
 				Overrides: []PanelFieldConfigOverwrite{},
 			},
-			GridPos: gridPos,
+			GridPos: settings.gridPos,
 			Targets: []interface{}{
 				PanelTargetCloudWatch{
 					Alias: "",
 					Dimensions: map[string]string{
-						"QueueName": queue,
+						"QueueName": queue.QueueNameFull,
 					},
 					Expression: "",
 					Id:         "",
@@ -41,13 +42,14 @@ func NewPanelSqsMessagesVisible(queue string) PanelFactory {
 	}
 }
 
-func NewPanelSqsTraffic(queue string) PanelFactory {
-	return func(appId AppId, gridPos PanelGridPos) Panel {
+func NewPanelSqsTraffic(queue MetadataCloudAwsSqsQueue) PanelFactory {
+	return func(settings PanelSettings) Panel {
 		return Panel{
-			Datasource: "CloudWatch",
+			Datasource: settings.resourceNames.GetCwDatasourceNameByClientName(queue.AwsClientName),
 			FieldConfig: PanelFieldConfig{
 				Defaults: PanelFieldConfigDefaults{
 					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls:     true,
 						LineWidth:     2,
 						AxisPlacement: "right",
 					},
@@ -55,12 +57,12 @@ func NewPanelSqsTraffic(queue string) PanelFactory {
 				},
 				Overrides: []PanelFieldConfigOverwrite{},
 			},
-			GridPos: gridPos,
+			GridPos: settings.gridPos,
 			Targets: []interface{}{
 				PanelTargetCloudWatch{
 					Alias: "",
 					Dimensions: map[string]string{
-						"QueueName": queue,
+						"QueueName": queue.QueueNameFull,
 					},
 					Expression: "",
 					Id:         "",
@@ -77,7 +79,7 @@ func NewPanelSqsTraffic(queue string) PanelFactory {
 				PanelTargetCloudWatch{
 					Alias: "",
 					Dimensions: map[string]string{
-						"QueueName": queue,
+						"QueueName": queue.QueueNameFull,
 					},
 					Expression: "",
 					Id:         "",
@@ -94,7 +96,7 @@ func NewPanelSqsTraffic(queue string) PanelFactory {
 				PanelTargetCloudWatch{
 					Alias: "",
 					Dimensions: map[string]string{
-						"QueueName": queue,
+						"QueueName": queue.QueueNameFull,
 					},
 					Expression: "",
 					Id:         "",
@@ -111,6 +113,60 @@ func NewPanelSqsTraffic(queue string) PanelFactory {
 			},
 			Options: &PanelOptionsCloudWatch{},
 			Title:   "Traffic",
+			Type:    "timeseries",
+		}
+	}
+}
+
+func NewPanelSqsMessageSize(queue MetadataCloudAwsSqsQueue) PanelFactory {
+	return func(settings PanelSettings) Panel {
+		return Panel{
+			Datasource: settings.resourceNames.GetCwDatasourceNameByClientName(queue.AwsClientName),
+			FieldConfig: PanelFieldConfig{
+				Defaults: PanelFieldConfigDefaults{
+					Custom: PanelFieldConfigDefaultsCustom{
+						SpanNulls:     true,
+						LineWidth:     2,
+						AxisPlacement: "right",
+					},
+					Min:  "0",
+					Unit: "bytes",
+				},
+				Overrides: []PanelFieldConfigOverwrite{},
+			},
+			GridPos: settings.gridPos,
+			Targets: []interface{}{
+				PanelTargetCloudWatch{
+					Alias: "Average",
+					Dimensions: map[string]string{
+						"QueueName": queue.QueueNameFull,
+					},
+					MatchExact: false,
+					MetricName: "SentMessageSize",
+					Namespace:  "AWS/SQS",
+					RefId:      "A",
+					Region:     "default",
+					Statistics: []string{
+						"Average",
+					},
+				},
+				PanelTargetCloudWatch{
+					Alias: "Maximum",
+					Dimensions: map[string]string{
+						"QueueName": queue.QueueNameFull,
+					},
+					MatchExact: false,
+					MetricName: "SentMessageSize",
+					Namespace:  "AWS/SQS",
+					RefId:      "B",
+					Region:     "default",
+					Statistics: []string{
+						"Maximum",
+					},
+				},
+			},
+			Options: &PanelOptionsCloudWatch{},
+			Title:   "Message Size",
 			Type:    "timeseries",
 		}
 	}

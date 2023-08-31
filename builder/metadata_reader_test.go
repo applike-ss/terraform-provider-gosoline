@@ -17,7 +17,16 @@ func TestReadApplicationMetadataSuccess(t *testing.T) {
 		Cloud: builder.MetadataCloud{
 			Aws: builder.MetadataCloudAws{
 				Dynamodb: builder.MetadataCloudAwsDynamodb{
-					Tables: []string{"foo", "bar"},
+					Tables: []builder.MetadataCloudAwsDynamodbTable{
+						{
+							AwsClientName: "default",
+							TableName:     "foo",
+						},
+						{
+							AwsClientName: "default",
+							TableName:     "bar",
+						},
+					},
 				},
 			},
 		},
@@ -30,7 +39,7 @@ func TestReadApplicationMetadataSuccess(t *testing.T) {
 		writer.Write(bytes)
 	}))
 
-	reader := builder.NewMetadataReaderWithHostBuilder(func(appId builder.AppId) string {
+	reader := builder.NewMetadataReaderWithHostBuilder(func(_ builder.AppId) string {
 		return ts.URL
 	})
 
@@ -54,7 +63,7 @@ func TestReadApplicationMetadataRetry(t *testing.T) {
 		writer.Write([]byte(`{}`))
 	}))
 
-	reader := builder.NewMetadataReaderWithHostBuilder(func(appId builder.AppId) string {
+	reader := builder.NewMetadataReaderWithHostBuilder(func(_ builder.AppId) string {
 		return ts.URL
 	}, func(bo *backoff.ExponentialBackOff) {
 		bo.InitialInterval = time.Millisecond * 100
@@ -73,7 +82,7 @@ func TestReadApplicationMetadataRetryTimeout(t *testing.T) {
 		writer.WriteHeader(http.StatusBadGateway)
 	}))
 
-	reader := builder.NewMetadataReaderWithHostBuilder(func(appId builder.AppId) string {
+	reader := builder.NewMetadataReaderWithHostBuilder(func(_ builder.AppId) string {
 		return ts.URL
 	}, func(bo *backoff.ExponentialBackOff) {
 		bo.InitialInterval = time.Millisecond
@@ -82,6 +91,6 @@ func TestReadApplicationMetadataRetryTimeout(t *testing.T) {
 	})
 
 	data, err := reader.ReadMetadata(builder.AppId{})
-	assert.EqualError(t, err, "can not read application metadata: got response code 502: metadata not yet available")
+	assert.EqualError(t, err, "can not read application metadata from "+ts.URL+": got response code 502: metadata not yet available")
 	assert.Nil(t, data)
 }

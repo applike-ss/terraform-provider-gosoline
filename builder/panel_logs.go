@@ -1,14 +1,11 @@
 package builder
 
-import "fmt"
-
-func NewPanelLogs(appId AppId, gridPos PanelGridPos) Panel {
-	datasource := fmt.Sprintf("elasticsearch-%s-logs-%s-%s-%s", appId.Environment, appId.Project, appId.Family, appId.Application)
-	gridPos.W = 24
-	gridPos.H = 16
+func NewPanelLogs(settings PanelSettings) Panel {
+	settings.gridPos.W = 24
+	settings.gridPos.H = 16
 
 	return Panel{
-		Datasource: datasource,
+		Datasource: settings.resourceNames.GrafanaElasticsearchDatasourceName,
 		FieldConfig: PanelFieldConfig{
 			Defaults: PanelFieldConfigDefaults{
 				Custom: PanelFieldConfigDefaultsCustom{
@@ -19,7 +16,7 @@ func NewPanelLogs(appId AppId, gridPos PanelGridPos) Panel {
 			},
 			Overrides: []PanelFieldConfigOverwrite{},
 		},
-		GridPos: gridPos,
+		GridPos: settings.gridPos,
 		Targets: []interface{}{
 			PanelTargetElasticsearch{
 				RefId: "A",
